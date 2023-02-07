@@ -12,3 +12,4 @@ Run the training script to obtain an optimized checkpoint.
 ```bash
 $ python FcNN_SingleQubit_RawData_tinyModel.py
 ```
+List of saved checkpoints can be found [here](https://fermicloud-my.sharepoint.com/:f:/g/personal/jcampos_services_fnal_gov/Eneb82SL2s5ItPpzcefppf0B6uPbiELoxlybgFL-i4HU_w?e=og90Lf). 
