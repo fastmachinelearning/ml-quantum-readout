@@ -4,7 +4,7 @@ channels:
   - anaconda
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.7
   - pytorch-cpu
   - pip 
   - pip:
@@ -13,3 +13,4 @@ dependencies:
     - matplotlib
     - tqdm 
     - h5py
+    - notebook
