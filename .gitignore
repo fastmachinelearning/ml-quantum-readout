@@ -134,5 +134,8 @@ dmypy.json
 # hls4ml projects
 hls4ml_prj*/
 
+# model checkpoints 
+checkpoints/
+
 # other 
 *.txt
