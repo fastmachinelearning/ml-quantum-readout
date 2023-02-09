@@ -11,7 +11,7 @@ import numpy as np
 
 # Load the raw data
 IF = -136.75/1e3
-with h5py.File(r'../datasets/qubits/00002_IQ_plot_raw.h5', 'r') as f:
+with h5py.File(r'../../datasets/qubits/00002_IQ_plot_raw.h5', 'r') as f:
     adc_g_1 = array(f['adc_g_1'])[0]
     adc_g_2 = array(f['adc_g_2'])[0]
     adc_e_1 = array(f['adc_e_1'])[0]
