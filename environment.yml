@@ -14,3 +14,7 @@ dependencies:
     - tqdm 
     - h5py
     - notebook
+    - torchvision==0.13.1
+    - torchinfo 
+    - pytorchcv
+    - brevitas
