@@ -18,3 +18,5 @@ dependencies:
     - torchinfo 
     - pytorchcv
     - brevitas
+    - pydot 
+    - graphviz

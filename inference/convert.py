@@ -1,139 +1,72 @@
 import os
 import argparse
-import numpy as np
+import onnx
+import yaml
 import hls4ml
+import torch
 
 import sys
-sys.path.append('..')
-
-import torch
-import torch.nn as nn
-import torch.utils.data
+sys.path.append("..")
 
 from utils.data import test_data
 from utils.config import print_dict
 from utils.hls import evaluate_hls
+from training.qat import TinyClassifier, BrevitasTinyClassifier, HawqTinyClassifier
 
 
-csr = range(500, 1500)
-sr = len(csr)
-hn = sr * 2 * 1
-
-
-class Classifier(nn.Module):
-    def __init__(self):
-        super(Classifier, self).__init__()
-
-        self.linear1 = nn.Linear(sr * 2, int(hn / 8))
-        self.relu1 = nn.ReLU()
-        self.bn = nn.BatchNorm1d(int(hn / 8), affine=True)
-
-        self.linear2 = nn.Linear(int(hn / 8), 2)
-        self.relu2 = nn.ReLU()
-
-    def forward(self, sig):
-        x = self.linear1(sig)
-        x = self.relu1(x)
-        x = self.bn(x)
-
-        x = self.linear2(x)
-        x = self.relu2(x)
-        return x
-
-
-def get_static_config():
-    reusefactor = args.reuse_factor
-    weight_precision = 'ap_fixed<12,2>'
-    result_precision = 'ap_fixed<24,10>'
-    reduced_result_precision = 'ap_fixed<12,4>'
-
-    hls_config ={}
-
-    hls_config['Model'] = {}
-    hls_config['LayerName'] = {}
-    hls_config['Model']['ReuseFactor'] = reusefactor
-    hls_config['Model']['Precision'] = "ap_fixed<10,10>"
-    hls_config['Model']['Strategy'] = 'resource'
-
-    ### layers
-    hls_config['LayerName']['bn'] = {}
-    hls_config['LayerName']['linear1'] = {}
-    hls_config['LayerName']['linear2'] = {}
-    hls_config['LayerName']['bn']['Precision'] = {}
-    hls_config['LayerName']['linear1']['Precision'] = {}
-    hls_config['LayerName']['linear2']['Precision'] = {}
-
-    # weight
-    hls_config['LayerName']['bn']['Precision']['scale'] = weight_precision
-    hls_config['LayerName']['linear1']['Precision']['weight'] = weight_precision
-    hls_config['LayerName']['linear2']['Precision']['weight'] = weight_precision
-
-    # bias
-    hls_config['LayerName']['bn']['Precision']['bias'] = weight_precision
-    hls_config['LayerName']['linear1']['Precision']['bias'] = weight_precision
-    hls_config['LayerName']['linear2']['Precision']['bias'] = weight_precision
-
-    # accum 
-    hls_config['LayerName']['bn']['Precision']['accum_t'] = result_precision
-    hls_config['LayerName']['linear1']['Precision']['accum_t'] = result_precision
-    hls_config['LayerName']['linear2']['Precision']['accum_t'] = result_precision
-    hls_config['LayerName']['bn']['accum_t'] = result_precision
-    hls_config['LayerName']['linear1']['accum_t'] = result_precision
-    hls_config['LayerName']['linear2']['accum_t'] = result_precision
-
-    # result
-    hls_config['LayerName']['bn']['Precision']['result'] = reduced_result_precision
-    hls_config['LayerName']['linear1']['Precision']['result'] = result_precision
-    hls_config['LayerName']['linear2']['Precision']['result'] = reduced_result_precision
-
-    # reusefactor
-    hls_config['LayerName']['bn']['ReuseFactor'] = reusefactor
-    hls_config['LayerName']['linear1']['ReuseFactor'] = reusefactor
-    hls_config['LayerName']['linear2']['ReuseFactor'] = 500
-
-    ## activation
-    hls_config['LayerName']['relu1'] = {}
-    hls_config['LayerName']['relu2'] = {}
-    hls_config['LayerName']['relu1']['Precision'] = {}
-    hls_config['LayerName']['relu2']['Precision'] = {}
-    hls_config['LayerName']['relu1']['Precision'] = result_precision
-    hls_config['LayerName']['relu2']['Precision'] = reduced_result_precision
-    hls_config['LayerName']['relu1']['ReuseFactor'] = reusefactor
-    hls_config['LayerName']['relu2']['ReuseFactor'] = reusefactor
-    return hls_config 
+def open_config(args):
+    with open(args.config) as stream:
+        config = yaml.safe_load(stream)
+    return config
 
 
 def main(args):
+    config = open_config(args)
 
-    base_dir = "../hls4ml_prjs"
-    prj_dir = os.path.join(base_dir, f"hls4ml_prj_resource_rf{args.reuse_factor}")
-    hls_fig = os.path.join(prj_dir, "hls_model.png")
-
-    model = Classifier()
-    print('Loading model checkpoint...')
-    model.load_state_dict(torch.load("../checkpoints/checkpoint_tiny_affine.pth"))
-
-    hls_config = get_static_config()
+    HLSConfig = config["HLSConfig"]
+    XilinxPart = config["Part"]
+    IOType = config["IOType"]
+    ClockPeriod = config["ClockPeriod"]
+    ModelCkp = config["ModelCkp"]
+    ModelType = config["ModelType"]
+    OutputDir = config["OutputDir"]
+    HLSFig = os.path.join(OutputDir, "hls_model.png")
 
     print("------------------------------------------------------")
-    # print_dict(hls_config)
+    print_dict(config)
     print("------------------------------------------------------")
 
-    hls_model = hls4ml.converters.convert_from_pytorch_model(
-        model,
-        input_shape=[1, 2000],
-        hls_config=hls_config,
-        output_dir=prj_dir,
-        part="xczu49dr-ffvf1760-2-e",
-    )
+    if ModelType.lower() == "torch":
+        model = TinyClassifier()
+        model.load_state_dict(torch.load(ModelCkp))
+
+        hls_model = hls4ml.converters.convert_from_pytorch_model(
+            model=model,
+            input_shape=[1, 2000],
+            hls_config=HLSConfig,
+            output_dir=OutputDir,
+            part=XilinxPart,
+            io_type=IOType,
+            clock_period=ClockPeriod,
+        )
+    elif ModelType.lower() == "onnx":
+        model = onnx.load(ModelCkp)
+        hls_model = hls4ml.converters.convert_from_onnx_model(
+            model=model,
+            hls_config=HLSConfig,
+            output_dir=OutputDir,
+            part=XilinxPart,
+            io_type=IOType,
+            clock_period=ClockPeriod,
+        )
 
     # compile and compare
-    print(f'Creating hls4ml project directory {prj_dir}')
+    print(f"Creating hls4ml project directory {OutputDir}")
     hls_model.compile()
 
     # visualize model
     hls4ml.utils.plot_model(
-        hls_model, show_shapes=True, show_precision=True, to_file=hls_fig
+        hls_model, show_shapes=True, show_precision=True, to_file=HLSFig
     )
 
     # evaluate hls model
@@ -145,13 +78,23 @@ def main(args):
         print("------------------------------------------------------")
 
     if args.build:
-        hls_model.build(csim=False)
-        hls4ml.report.read_vivado_report(prj_dir)
+        BuildOptions = config["BuildOptions"]
+        hls_model.build(
+            reset=BuildOptions["reset"],
+            csim=BuildOptions["csim"],
+            synth=BuildOptions["synth"],
+            cosim=BuildOptions["cosim"],
+            validation=BuildOptions["validation"],
+            export=BuildOptions["export"],
+            vsynth=BuildOptions["vsynth"],
+            fifo_opt=BuildOptions["fifo_opt"],
+        )
+        hls4ml.report.read_vivado_report(OutputDir)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Options for hls4ml synthesis")
-    parser.add_argument("--reuse-factor", type=int, default=1)
+    parser = argparse.ArgumentParser("Options for hls4ml")
+    parser.add_argument("-c", "--config", type=str, default="pytorch/baseline.yml")
     parser.add_argument("-b", "--build", action="store_true")
     parser.add_argument("-e", "--evaluate", action="store_true")
     args = parser.parse_args()

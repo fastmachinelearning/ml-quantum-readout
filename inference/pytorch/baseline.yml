@@ -1,0 +1,51 @@
+OutputDir: pytorch/zcu216_prj_torch_tiny_ptq
+
+ModelType: torch
+ModelCkp: ../checkpoints/checkpoint_tiny_affine.pth
+
+BuildOptions:
+  reset: False
+  csim: True
+  synth: True
+  cosim: False
+  validation: False
+  export: True
+  vsynth: True
+  fifo_opt: True
+
+Part: xczu49dr-ffvf1760-2-e
+ClockPeriod: 5 # 5ns (200 MHz)
+IOType: io_stream # options: io_parallel/io_stream
+
+HLSConfig:
+  Model:
+    ReuseFactor: 500000
+    Precision: ap_fixed<10,10>
+    Strategy: Resource
+  LayerName:
+    linear1:
+      accum_t: ap_fixed<24,10>
+      Precision:
+        weight: ap_fixed<12,2>
+        bias: ap_fixed<12,2>
+        result: ap_fixed<24,10>
+    relu1:
+      accum_t: ap_fixed<24,10>
+      Precision:
+        result: ap_fixed<24,10>
+    bn:
+      accum_t: ap_fixed<24,10>
+      Precision:
+        scale: ap_fixed<12,2>
+        bias: ap_fixed<12,2>
+        result: ap_fixed<12,4>
+    linear2:
+      accum_t: ap_fixed<24,10>
+      Precision:
+        weight: ap_fixed<12,2>
+        bias: ap_fixed<12,2>
+        result: ap_fixed<12,4>
+    relu2:
+      accum_t: ap_fixed<24,10>
+      Precision:
+        result: ap_fixed<12,4>
