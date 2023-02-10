@@ -4,14 +4,14 @@ ModelType: torch
 ModelCkp: ../checkpoints/checkpoint_tiny_affine.pth
 
 BuildOptions:
-  reset: False
-  csim: True
-  synth: True
-  cosim: False
-  validation: False
-  export: True
-  vsynth: True
-  fifo_opt: True
+  reset: 0
+  csim: 1
+  synth: 1
+  cosim: 0
+  validation: 0
+  export: 1
+  vsynth: 1
+  fifo_opt: 1
 
 Part: xczu49dr-ffvf1760-2-e
 ClockPeriod: 5 # 5ns (200 MHz)

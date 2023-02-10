@@ -11,7 +11,7 @@ sys.path.append("..")
 from utils.data import test_data
 from utils.config import print_dict
 from utils.hls import evaluate_hls
-from training.qat import TinyClassifier, BrevitasTinyClassifier, HawqTinyClassifier
+from training.qat import TinyClassifier
 
 
 def open_config(args):
@@ -79,6 +79,8 @@ def main(args):
 
     if args.build:
         BuildOptions = config["BuildOptions"]
+        for opt in BuildOptions:
+            BuildOptions[opt] = True if BuildOptions[opt] == 1 else False
         hls_model.build(
             reset=BuildOptions["reset"],
             csim=BuildOptions["csim"],
