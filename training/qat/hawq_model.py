@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from hawq.utils.quantization_utils.quant_modules import QuantLinear, QuantAct 
+from .hawq.utils.quantization_utils.quant_modules import QuantLinear, QuantAct 
 
 
 csr = range(500, 1500)
@@ -8,9 +8,9 @@ sr = len(csr)
 hn = sr * 2 * 1
 
 
-class HawqClassifier(nn.Module):
+class HawqTinyClassifier(nn.Module):
     def __init__(self, model):
-        super(HawqClassifier, self).__init__()
+        super(HawqTinyClassifier, self).__init__()
 
         self.quant_input = QuantAct(activation_bit=12)
         self.q_relu1 = QuantAct(activation_bit=12)

@@ -11,9 +11,9 @@ sr = len(csr)
 hn = sr * 2 * 1
 
 
-class BrevitasModel(nn.Module):
+class BrevitasTinyClassifier(nn.Module):
     def __init__(self):
-        super(BrevitasModel, self).__init__()
+        super(BrevitasTinyClassifier, self).__init__()
 
         self.quant_inp = qnn.QuantIdentity(bit_width=12, return_quant_tensor=True)
         
@@ -35,7 +35,7 @@ class BrevitasModel(nn.Module):
 
 
 if __name__ == "__main__":
-    model = BrevitasModel()
+    model = BrevitasTinyClassifier()
     print("====================================")
     print(model)
     print("====================================")

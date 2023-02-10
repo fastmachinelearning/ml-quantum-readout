@@ -5,9 +5,9 @@ sr = len(csr)
 hn = sr * 2 * 1
 
 
-class Classifier(nn.Module):
+class TinyClassifier(nn.Module):
     def __init__(self):
-        super(Classifier, self).__init__()
+        super(TinyClassifier, self).__init__()
 
         self.linear1 = nn.Linear(sr * 2, int(hn / 8))
         self.relu1 = nn.ReLU()
