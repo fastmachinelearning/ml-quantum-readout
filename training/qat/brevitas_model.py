@@ -1,4 +1,4 @@
-import torch 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -19,12 +19,11 @@ class BrevitasTinyClassifier(nn.Module):
         
         self.fc1   = qnn.QuantLinear(sr * 2, int(hn / 8), bias=True, weight_bit_width=6, bias_quant=Int32Bias)
         self.relu1 = qnn.QuantReLU(bit_width=12, return_quant_tensor=True)
-        
+
         self.bn = nn.BatchNorm1d(int(hn / 8), affine=True)
 
         self.fc2   = qnn.QuantLinear(int(hn / 8), 2, bias=True, input_quant=Int8ActPerTensorFloat, weight_bit_width=6, bias_quant=Int32Bias)
         self.relu2 = qnn.QuantReLU(bit_width=12, return_quant_tensor=True)
-
 
     def forward(self, x):
         out = self.quant_inp(x)
