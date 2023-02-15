@@ -12,7 +12,7 @@ from utils.data import test_data
 from utils.config import print_dict
 from utils.hls import evaluate_hls
 from training.qat import TinyClassifier
-
+from training.models.stream_test import *
 
 def open_config(args):
     with open(args.config) as stream:
@@ -29,6 +29,7 @@ def main(args):
     ClockPeriod = config["ClockPeriod"]
     ModelCkp = config["ModelCkp"]
     ModelType = config["ModelType"]
+    ModelFramework = config["Framework"]
     OutputDir = config["OutputDir"]
     HLSFig = os.path.join(OutputDir, "hls_model.png")
 
@@ -36,9 +37,14 @@ def main(args):
     print_dict(config)
     print("------------------------------------------------------")
 
-    if ModelType.lower() == "torch":
-        model = TinyClassifier()
+    if ModelFramework.lower() == "torch":
+        if ModelType.lower() == "stream_test":
+            model = Classifierv1() if "v1" in ModelCkp else Classifierv2()
+        else:
+            model = TinyClassifier()
+        
         model.load_state_dict(torch.load(ModelCkp))
+        print(model)
 
         hls_model = hls4ml.converters.convert_from_pytorch_model(
             model=model,
@@ -49,7 +55,7 @@ def main(args):
             io_type=IOType,
             clock_period=ClockPeriod,
         )
-    elif ModelType.lower() == "onnx":
+    elif ModelFramework.lower() == "onnx":
         model = onnx.load(ModelCkp)
         hls_model = hls4ml.converters.convert_from_onnx_model(
             model=model,
@@ -89,7 +95,7 @@ def main(args):
             validation=BuildOptions["validation"],
             export=BuildOptions["export"],
             vsynth=BuildOptions["vsynth"],
-            fifo_opt=BuildOptions["fifo_opt"],
+            # fifo_opt=BuildOptions["fifo_opt"],
         )
         hls4ml.report.read_vivado_report(OutputDir)
 

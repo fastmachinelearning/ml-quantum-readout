@@ -1,0 +1,32 @@
+OutputDir: stream_test/zcu216_torch_2000_1_ioStream_rf1_bw8_sResource
+
+Framework: torch
+ModelType: stream_test
+ModelCkp: ../checkpoints/stream_test/ckp_2000_1_v1.2.pth
+
+BuildOptions:
+  reset: 0
+  csim: 1
+  synth: 1
+  cosim: 0
+  validation: 0
+  export: 0
+  vsynth: 0
+  fifo_opt: 0
+
+Part: xczu49dr-ffvf1760-2-e
+ClockPeriod: 5 # 5ns (200 MHz)
+IOType: io_stream # options: io_parallel/io_stream
+
+HLSConfig:
+  Model:
+    ReuseFactor: 1
+    Precision: ap_fixed<8,1>
+    Strategy: Resource
+  LayerName:
+    linear1:
+      accum_t: ap_fixed<8,1>
+      Precision:
+        weight: ap_fixed<8,1>
+        bias: ap_fixed<8,1>
+        result: ap_fixed<8,1>
