@@ -41,21 +41,7 @@ Classifier(
 ## Inference and Synthesis
 The target device for the QICK system is the Zynq UltraScale+ [RFSoC ZCU216](https://www.xilinx.com/products/boards-and-kits/zcu216.html) Evaluation Kit. We use Vivado 2020.1 for all synthesis results.
 
-To convert a trained model into FPGA firmware run
-```bash 
-cd inference
-python convert.py -c pytorch/baseline.yml
-```
-
-### Quantized Models
-Create the environment for QONNX ingestion in hls4ml
-```
-conda env create -f environment-onnx.yml
-conda activate ml4qick-onnx-env
-```
-
-To convert a quantized model to FPGA firmware run
 ```bash
 cd inference 
-python convert.py -c <framework>/hls_config.yml
+python convert.py -c <framework>/<config>.yml
 ```
