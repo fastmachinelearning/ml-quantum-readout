@@ -2,19 +2,28 @@ precision = 'ap_fixed<16,6>'
 reusefactor = 1
 
 
-def create_config(layers):
+def create_config(layers, precision='ap_fixed<16,6>', reusefactor=1):
     config = {}
     config['Model'] = {}
+    config['Model']['Precision'] = precision
+    config['Model']['ReuseFactor'] = reusefactor
+
+    config['LayerName'] = {}
 
     for layer in layers:
-        config['Model'][layer] = {}
-        config['Model'][layer]['Precision'] = {}
-        config['Model'][layer]['ReuseFactor'] = reusefactor
+        config['LayerName'][layer] = {}
+        config['LayerName'][layer]['Trace'] = True
+        config['LayerName'][layer]['Precision'] = {}
+        config['LayerName'][layer]['ReuseFactor'] = reusefactor
 
     for layer in layers:
-        config['Model'][layer]['Precision']['weight'] = precision
-        config['Model'][layer]['Precision']['bias'] = precision
-        config['Model'][layer]['Precision']['result'] = precision
+        if "bn" in layer:
+            config['LayerName'][layer]['Precision']['scale'] = precision
+        else:
+            config['LayerName'][layer]['Precision']['weight'] = precision
+        config['LayerName'][layer]['Precision']['bias'] = precision
+        config['LayerName'][layer]['Precision']['result'] = precision
+    return config
 
 
 def print_dict(d, indent=0):
