@@ -8,7 +8,7 @@ import torch
 import sys
 sys.path.append("..")
 
-from utils.data import test_data
+from utils.data import get_dataset
 from utils.config import print_dict
 from utils.hls import evaluate_hls
 from training.qat import TinyClassifier
@@ -55,7 +55,7 @@ def main(args):
             io_type=IOType,
             clock_period=ClockPeriod,
         )
-    elif ModelFramework.lower() == "onnx":
+    elif ModelFramework.lower() == "hawq":
         model = onnx.load(ModelCkp)
         hls_model = hls4ml.converters.convert_from_onnx_model(
             model=model,
@@ -77,6 +77,7 @@ def main(args):
 
     # evaluate hls model
     if args.evaluate:
+        _, test_data = get_dataset()
         hls_acc = evaluate_hls(hls_model, test_data)
 
         print("------------------------------------------------------")
