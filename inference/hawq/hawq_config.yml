@@ -1,0 +1,79 @@
+OutputDir: hawq/zcu216_hawq_tiny_ioStream_rf250_sResource
+
+Framework: hawq
+ModelType: tiny
+ModelCkp: ../checkpoints/hawq_clean.onnx
+
+BuildOptions:
+  reset: 0
+  csim: 1
+  synth: 1
+  cosim: 0
+  validation: 0
+  export: 1
+  vsynth: 1
+  fifo_opt: 1
+
+Part: xczu49dr-ffvf1760-2-e
+ClockPeriod: 5 # 5ns (200 MHz)
+IOType: io_stream # options: io_parallel/io_stream
+
+HLSConfig:
+  Model:
+    ReuseFactor:       250
+    Precision:         ap_fixed<12,12>
+    Strategy:          resource
+  LayerName:
+    global_in:
+      Precision:       ap_fixed<11,11>
+    bn_Mul_0:
+      Precision:
+        scale:         ap_fixed<18,4>
+        bias:          ap_uint<1>
+        accum_t:       ap_fixed<12,10>
+        result:        ap_fixed<12,10>
+      ReuseFactor:     250
+      Trace:           True
+    bn_Mul_1:
+      Precision:
+        scale:         ap_fixed<18,4>
+        accum_t:       ap_fixed<11,10>
+        result:        ap_fixed<11,10>
+      Trace:           True
+    bn_Div_0:
+      Precision:
+        scale:         ap_fixed<18,4>
+        bias:          ap_uint<1>
+        accum_t:       ap_fixed<12,4>
+        result:        ap_fixed<12,4>
+      Trace:           True
+    bn_Div_1:
+      Precision:
+        scale:         ap_fixed<18,4>
+        bias:          ap_fixed<10,1>
+        accum_t:       ap_fixed<8,2>
+        result:        ap_fixed<8,2>
+      ReuseFactor:     250
+      Trace:           True
+    Dense_MatMul_0:
+      Precision:
+        accum_t:       ap_fixed<12,9>
+        result:        ap_fixed<12,9>
+      ReuseFactor:     250
+      Trace:           True
+    Dense_MatMul_1:
+      Precision:
+        bias:          ap_uint<1>
+        accum_t:       ap_fixed<10,8>
+        result:        ap_fixed<10,8>
+      ReuseFactor:     250
+      Trace:           True
+    Relu_0:
+      Precision:
+        result:        ap_fixed<12,10>
+      ReuseFactor:     250
+      Trace:           True
+    Relu_1:
+      Precision:       ap_fixed<11,10>
+      ReuseFactor:     250
+      Trace:           True
