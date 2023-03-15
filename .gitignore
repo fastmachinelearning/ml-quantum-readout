@@ -141,3 +141,5 @@ checkpoints/
 
 # other 
 *.txt
+hls4ml/
+notebooks/3*

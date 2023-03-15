@@ -1,3 +1,0 @@
-[submodule "training/qat/hawq"]
-	path = training/qat/hawq
-	url = https://github.com/Zhen-Dong/HAWQ.git
