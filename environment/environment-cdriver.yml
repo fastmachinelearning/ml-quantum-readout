@@ -1,0 +1,22 @@
+name: ml4qick-env
+channels:
+  - pytorch
+  - anaconda
+  - conda-forge
+dependencies:
+  - python=3.7
+  - pytorch-cpu
+  - pip 
+  - pip:
+    - git+https://github.com/fnal-fastml/hls4ml.git
+    - numpy==1.20.3
+    - matplotlib
+    - tqdm 
+    - h5py
+    - notebook
+    - torchvision==0.13.1
+    - torchinfo 
+    - pytorchcv
+    - brevitas
+    - pydot 
+    - graphviz
