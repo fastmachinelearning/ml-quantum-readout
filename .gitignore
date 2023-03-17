@@ -138,8 +138,11 @@ zcu216*/
 
 # model checkpoints 
 checkpoints/
+data/
+results/
 
 # other 
 *.txt
 hls4ml/
 notebooks/3*
+*.tmp

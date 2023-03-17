@@ -1,3 +1,5 @@
+import os
+import argparse
 import h5py
 from numpy import *
 # from matplotlib.pyplot import *
@@ -77,3 +79,19 @@ def get_dataloaders():
     test_loader = torch.utils.data.DataLoader(test_data, batch_size = batch_size, 
                                                 num_workers = num_workers, shuffle=True)
     return train_loader, test_loader
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--dir', default='../data')
+    args = parser.parse_args()
+
+    train_data, test_data = get_dataset()
+    
+    X_train_val, y_train_val = train_data[:]
+    X_test, y_test = test_data[:]
+
+    np.save(os.path.join(args.dir, 'X_train_val.npy'), X_train_val)
+    np.save(os.path.join(args.dir, 'X_test.npy'), X_test)
+    np.save(os.path.join(args.dir, 'y_train_val.npy'), y_train_val)
+    np.save(os.path.join(args.dir, 'y_test.npy'), y_test)
