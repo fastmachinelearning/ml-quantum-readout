@@ -1,18 +1,22 @@
 import os
+import sys
+sys.path.append("..")
+import sys
 import argparse
 import onnx
 import yaml
 import hls4ml
+from datetime import datetime
+import numpy as np
 import torch
-
-import sys
-sys.path.append("..")
+from sklearn.metrics import accuracy_score
+from tensorflow.keras.models import load_model
+from qkeras.utils import _add_supported_quantized_objects
 
 from utils.data import get_dataset
 from utils.config import print_dict
 from utils.hls import evaluate_hls
-from training.qat import TinyClassifier
-from training.models.stream_test import *
+
 
 def open_config(args):
     with open(args.config) as stream:
@@ -20,18 +24,28 @@ def open_config(args):
     return config
 
 
+def load_data():
+    X_test = np.ascontiguousarray(np.load('../data/X_test.npy'))    
+    y_test = np.load('../data/y_test.npy', allow_pickle=True)
+    return X_test, y_test
+
+
 def main(args):
     config = open_config(args)
 
-    HLSConfig = config["HLSConfig"]
-    XilinxPart = config["Part"]
-    IOType = config["IOType"]
-    ClockPeriod = config["ClockPeriod"]
-    ModelCkp = config["ModelCkp"]
-    ModelType = config["ModelType"]
+    HLSConfig =      config["HLSConfig"]
+    XilinxPart =     config["Part"]
+    Board =          config['Board']
+    Interface =      config["Interface"]
+    Backend =        config["Backend"]
+    Driver =         config["Driver"]
+    IOType =         config["IOType"]
+    ClockPeriod =    config["ClockPeriod"]
+    ModelCkp =       config["ModelCkp"]
+    ModelType =      config["ModelType"]
     ModelFramework = config["Framework"]
-    OutputDir = config["OutputDir"]
-    HLSFig = os.path.join(OutputDir, "hls_model.png")
+    OutputDir =      config["OutputDir"]
+    HLSFig =         os.path.join(OutputDir, "hls_model.png")
 
     print("------------------------------------------------------")
     print_dict(config)
@@ -57,6 +71,7 @@ def main(args):
         )
     elif ModelFramework.lower() == "hawq":
         model = onnx.load(ModelCkp)
+        
         hls_model = hls4ml.converters.convert_from_onnx_model(
             model=model,
             hls_config=HLSConfig,
@@ -64,6 +79,23 @@ def main(args):
             part=XilinxPart,
             io_type=IOType,
             clock_period=ClockPeriod,
+        )
+    elif ModelFramework.lower() == "keras":
+        co = {}
+        _add_supported_quantized_objects(co)
+        model = load_model(ModelCkp, custom_objects=co, compile=False)
+
+        hls_model = hls4ml.converters.convert_from_keras_model(
+            model=model,
+            hls_config=HLSConfig,
+            output_dir=OutputDir,
+            part=XilinxPart,
+            board=Board,
+            io_type=IOType,
+            clock_period=ClockPeriod,
+            interface=Interface,
+            backend=Backend,
+            driver=Driver,
         )
 
     # compile and compare
@@ -85,6 +117,8 @@ def main(args):
         print("------------------------------------------------------")
 
     if args.build:
+        start_time = datetime.now()
+
         BuildOptions = config["BuildOptions"]
         for opt in BuildOptions:
             BuildOptions[opt] = True if BuildOptions[opt] == 1 else False
@@ -99,6 +133,9 @@ def main(args):
             # fifo_opt=BuildOptions["fifo_opt"],
         )
         hls4ml.report.read_vivado_report(OutputDir)
+
+        time_elapsed = datetime.now() - start_time
+        print('Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed))
 
 
 if __name__ == "__main__":

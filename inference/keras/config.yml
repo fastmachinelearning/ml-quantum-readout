@@ -1,0 +1,50 @@
+OutputDir: keras/test
+
+Framework: keras
+ModelType: tiny
+ModelCkp: ../checkpoints/qkeras/qkeras_best_bs1024_e100_val0.1_lr0.01_acc88.7.h5
+
+BuildOptions:
+  reset: 0
+  csim: 1
+  synth: 1
+  cosim: 0
+  validation: 0
+  export: 1
+  vsynth: 1
+  fifo_opt: 1
+
+# Branch: external-weights-vivado-accelerator # TODO: Switch branches 
+Backend: VivadoAccelerator
+Interface: axi_stream # axi_lite, axi_stream, [axi_master]
+Driver: c
+Part: xczu49dr-ffvf1760-2-e
+Board: zcu216
+ClockPeriod: 5 # 5ns (200 MHz)
+IOType: io_stream # options: io_parallel/io_stream
+
+HLSConfig:
+  Model:
+    ReuseFactor:       75
+    Precision:         ap_fixed<16,6>
+    Strategy:          resource
+  LayerName:
+    fc1_input:
+      Trace:           True
+      Precision:       ap_fixed<12,12>
+    fc1:
+      Trace:           True
+      Precision:       ap_fixed<22,14>
+    fc1_linear:
+      Trace:           True
+      Precision:       ap_fixed<22,14>
+    relu1:
+      Trace:           True
+      Precision:       ap_ufixed<5,2,AP_RND,AP_SAT>
+    batch_normalization:
+      Trace:           True
+    fc2:
+      Trace:           True
+    relu2:
+      Trace:           True
+      Precision:       ap_ufixed<5,2,AP_RND,AP_SAT>
