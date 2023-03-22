@@ -9,8 +9,8 @@ Real raw data. Readout time is 2000 ns with 1 sample taken every nanosecond.
 
 * File : **00002_IQ_plot_raw.h5**
 * Train split [0.9]
-  * X shape : <tt>(9000, 2000)</tt>
-  * y shape : <tt>(9000, 2)</tt>
-* test split [0.1]
-  * X shape : <tt>(1000, 2000)</tt>
-  * y shape : <tt>(1000, 2)</tt>
+  * <tt>X shape</tt> : (9000, 2000)
+  * <tt>y shape</tt> : (9000, 2)
+* Test split [0.1]
+  * <tt>X shape</tt> : (1000, 2000)
+  * <tt>y shape</tt> : (1000, 2)
