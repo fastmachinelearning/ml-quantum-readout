@@ -1,3 +1,4 @@
+import os
 import argparse
 from datetime import datetime
 import numpy as np 
@@ -18,7 +19,7 @@ from qkeras.utils import _add_supported_quantized_objects
 
 def create_filename(args):
     if args.quantize:
-        return f'../../checkpoints/qkeras/qkeras_best_bs{args.batch_size}_e{args.epochs}_val{args.val_split}_lr{args.lr}.h5'
+        return f'../../checkpoints/qkeras/i500_w1000_s5/qkeras_best{args.batch_size}_e{args.epochs}_val{args.val_split}_lr{args.lr}.h5'
     return f'../../checkpoints/keras/keras_best_bs{args.batch_size}_e{args.epochs}_val{args.val_split}_lr{args.lr}.h5'
 
 
@@ -46,11 +47,11 @@ def one_hot_encode(data):
     return y_encoded
 
 
-def load_data():
-    X_train_val = np.load('../../data/X_train_val.npy')
-    X_test = np.ascontiguousarray(np.load('../../data/X_test.npy'))    
-    y_train_val = np.load('../../data/y_train_val.npy')
-    y_test = np.load('../../data/y_test.npy', allow_pickle=True)
+def load_data(args):
+    X_train_val = np.load(os.path.join(args.data_dir, 'X_train_val.npy'))
+    X_test = np.load(os.path.join(args.data_dir, 'X_test.npy'))    
+    y_train_val = np.load(os.path.join(args.data_dir, 'y_train_val.npy'))
+    y_test = np.load(os.path.join(args.data_dir, 'y_test.npy'), allow_pickle=True)
 
     y_train_val = one_hot_encode(y_train_val)
     y_test = one_hot_encode(y_test)
@@ -69,15 +70,15 @@ def get_keras_model():
 
 
 def get_qkeras_model():
-        model = Sequential()
-        model.add(QDense(250, input_shape=(2000,), name='fc1',
-                         kernel_quantizer=quantized_bits(2,0,alpha=1), bias_quantizer=quantized_bits(2,0,alpha=1),))
-        model.add(QActivation(activation=quantized_relu(6,3), name='relu1'))
-        model.add(BatchNormalization())
-        model.add(QDense(2, name='fc2',
-                         kernel_quantizer=quantized_bits(2,0,alpha=1), bias_quantizer=quantized_bits(2,0,alpha=1),))
-        model.add(QActivation(activation=quantized_relu(6,3), name='relu2'))
-        return model
+    model = Sequential()
+    model.add(QDense(50, input_shape=(400,), name='fc1',
+                        kernel_quantizer=quantized_bits(2,0,alpha=1), bias_quantizer=quantized_bits(2,0,alpha=1),))
+    model.add(QActivation(activation=quantized_relu(6,3), name='relu1'))
+    model.add(BatchNormalization())
+    model.add(QDense(2, name='fc2',
+                        kernel_quantizer=quantized_bits(2,0,alpha=1), bias_quantizer=quantized_bits(2,0,alpha=1),))
+    model.add(QActivation(activation=quantized_relu(6,3), name='relu2'))
+    return model
 
 
 def train(model, X_train_val, y_train_val, args):
@@ -96,7 +97,7 @@ def train(model, X_train_val, y_train_val, args):
 def main(args):
     start_time = datetime.now()
 
-    X_train_val, X_test, y_train_val, y_test = load_data()
+    X_train_val, X_test, y_train_val, y_test = load_data(args)
     model = get_qkeras_model() if args.quantize else get_keras_model()
 
     train(model, X_train_val, y_train_val, args)
@@ -110,7 +111,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Training Options.')
-    parser.add_argument('-p', '--prj-dir', type=str, default='../..')
+    parser.add_argument('-d', '--data-dir', type=str, default='../../data')
     parser.add_argument('-b', '--batch-size', type=int, default=1024)
     parser.add_argument('-e', '--epochs',type=int, default=100)
     parser.add_argument('-v', '--val-split', type=float, default=0.1)
@@ -119,6 +120,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
-
-# BinaryCrossentropy(from_logits=False)  # 0.749
-# BinaryCrossentropy(from_logits=True)  # 0.657
