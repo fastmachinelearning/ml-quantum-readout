@@ -66,3 +66,8 @@ The target device for the QICK system is the Zynq UltraScale+ [RFSoC ZCU216](htt
 cd inference 
 python convert.py -c <framework>/<config>.yml
 ```
+
+## Useful Links
+
+* [ZCU216 Evaluation Board User Guide](https://docs.xilinx.com/v/u/en-US/ug1390-zcu216-eval-bd)
+* [ZCU216 PYNQ](https://github.com/sarafs1926/ZCU216-PYNQ)
