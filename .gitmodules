@@ -1,0 +1,3 @@
+[submodule "training/src_torch/hawq"]
+	path = training/src_torch/hawq
+	url = https://github.com/Zhen-Dong/HAWQ.git
