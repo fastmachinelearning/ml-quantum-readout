@@ -24,9 +24,9 @@ def open_config(args):
     return config
 
 
-def load_data():
-    X_test = np.ascontiguousarray(np.load('../data/X_test.npy'))    
-    y_test = np.load('../data/y_test.npy', allow_pickle=True)
+def load_data(data_dir):
+    X_test = np.ascontiguousarray(np.load(os.path.join(data_dir, 'X_test.npy')))    
+    y_test = np.load(os.path.join(data_dir, 'y_test.npy'), allow_pickle=True)
     return X_test, y_test
 
 
@@ -44,6 +44,7 @@ def main(args):
     ModelCkp =       config["ModelCkp"]
     ModelType =      config["ModelType"]
     ModelFramework = config["Framework"]
+    DataDir =        config['DataDir']
     OutputDir =      config["OutputDir"]
     HLSFig =         os.path.join(OutputDir, "hls_model.png")
 
@@ -52,11 +53,6 @@ def main(args):
     print("------------------------------------------------------")
 
     if ModelFramework.lower() == "torch":
-        if ModelType.lower() == "stream_test":
-            model = Classifierv1() if "v1" in ModelCkp else Classifierv2()
-        else:
-            model = TinyClassifier()
-        
         model.load_state_dict(torch.load(ModelCkp))
         print(model)
 
@@ -90,11 +86,11 @@ def main(args):
             hls_config=HLSConfig,
             output_dir=OutputDir,
             part=XilinxPart,
-            board=Board,
             io_type=IOType,
             clock_period=ClockPeriod,
-            interface=Interface,
             backend=Backend,
+            board=Board,
+            interface=Interface,
             driver=Driver,
         )
 
@@ -109,11 +105,27 @@ def main(args):
 
     # evaluate hls model
     if args.evaluate:
-        _, test_data = get_dataset()
-        hls_acc = evaluate_hls(hls_model, test_data)
+        X_test, y_test = load_data(DataDir)
+        y_keras = model.predict(X_test)
+        y_hls = hls_model.predict(np.ascontiguousarray(X_test)) 
+        print(y_hls.shape)
+        print(y_test.shape)
+        hls_acc = accuracy_score(y_test, np.argmax(y_hls, axis=1)) 
+        keras_acc = accuracy_score(y_test, np.argmax(y_keras, axis=1)) 
 
+        np.savetxt(os.path.join(OutputDir, 'y_test.dat'), y_test, fmt='%i')
+        np.savetxt(os.path.join(OutputDir, 'y_keras.dat'), y_keras, fmt='%.10f')
+        np.savetxt(os.path.join(OutputDir, 'y_hls.dat'), y_hls, fmt='%.10f')
+        np.savetxt(os.path.join(OutputDir, 'inputs.dat'), X_test, fmt='%i')
+        
         print("------------------------------------------------------")
         print(f"hls4ml fidelity: {hls_acc:.6f}")
+        print(f"keras fidelity: {keras_acc:.6f}")
+        print("------------------------------------------------------")
+
+        hls_acc = accuracy_score(y_test[:20], np.argmax(y_hls[:20], axis=1)) 
+        print("------------------------------------------------------")
+        print(f"hls4ml fidelity (first 20): {hls_acc:.6f}")
         print("------------------------------------------------------")
 
     if args.build:
@@ -130,7 +142,7 @@ def main(args):
             validation=BuildOptions["validation"],
             export=BuildOptions["export"],
             vsynth=BuildOptions["vsynth"],
-            # fifo_opt=BuildOptions["fifo_opt"],
+            fifo_opt=BuildOptions["fifo_opt"],
         )
         hls4ml.report.read_vivado_report(OutputDir)
 
