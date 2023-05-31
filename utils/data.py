@@ -37,13 +37,27 @@ def get_dataset():
 
     """ Select the range of time series data. Each data is 2000 element vector 
     representing 2000ns readout signal"""
-    csr = range(500,1500)
+    csr = range(0,2000)
     sr = len(csr)
+    sr = 400
+    
+    index = 0 
+    idx_list = []
 
-    I_g = adc_g_1[:,csr]
-    Q_g = adc_g_2[:,csr] 
-    I_e = adc_e_1[:,csr] 
-    Q_e = adc_e_2[:,csr] 
+    while index < len(csr):
+        idx_list.append(index)
+        idx_list.append(index+1)
+        index += 10
+
+    I_g = adc_g_1[:,idx_list]
+    Q_g = adc_g_2[:,idx_list] 
+    I_e = adc_e_1[:,idx_list] 
+    Q_e = adc_e_2[:,idx_list]
+
+    # I_g = adc_g_1[:,csr]
+    # Q_g = adc_g_2[:,csr] 
+    # I_e = adc_e_1[:,csr] 
+    # Q_e = adc_e_2[:,csr] 
 
     # Dataset Creation
     data = zeros((adc_g_1.shape[0]*2,sr,2))
@@ -54,6 +68,7 @@ def get_dataset():
 
     labels = zeros(I_e.shape[0]*2)
     labels[I_e.shape[0]:I_e.shape[0]*2] = 1
+
 
     data = torch.from_numpy(data).float()
     labels = torch.from_numpy(labels).float()
@@ -83,7 +98,7 @@ def get_dataloaders():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dir', default='../data')
+    parser.add_argument('-d', '--dir', default='../data/all')
     args = parser.parse_args()
 
     train_data, test_data = get_dataset()

@@ -134,15 +134,28 @@ dmypy.json
 # hls4ml projects
 hls4ml_prj*/
 zcu216*/
+qkeras*/
 *.tar.gz
 
-# model checkpoints 
+# model checkpoints  
 checkpoints/
-data/
 results/
 
-# other 
+# other extensions 
+*.h5
+*.npy
 *.txt
+*.png
+*.dat
+*.tmp
+
+# other folders
+model_2*/
+model1*/
+fml-main/
+model1/
 hls4ml/
 notebooks/3*
-*.tmp
+tmp*/
+hls4ml_prj/
+*wrapper/
