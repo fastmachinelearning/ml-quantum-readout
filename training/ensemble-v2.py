@@ -42,12 +42,8 @@ class Model(tf.keras.Model):
             model = keras.Sequential()
             model.add(QDense(input_shape, name='layer1', kernel_quantizer=quantized_bits(16,5,alpha=1), bias_quantizer=quantized_bits(16,5,alpha=1),
                              kernel_regularizer=regularizers.L1L2(l1=1e-3, l2=1e-2)))
-            model.add(QActivation(activation=quantized_relu(16,6), name='relu1'))
             model.add(BatchNormalization(name='batchnorm1'),)
-            model.add(QDense(self.nodes_fc1, name='layer2', kernel_quantizer=quantized_bits(16,5,alpha=1), bias_quantizer=quantized_bits(16,5,alpha=1),
-                             kernel_regularizer=regularizers.L1L2(l1=1e-3, l2=1e-2)))
-            model.add(QActivation(activation=quantized_relu(16,6), name='relu2'))
-            model.add(BatchNormalization(name='batchnorm2'))
+            model.add(QActivation(activation=quantized_relu(16,6), name='relu1'))
             model.add(QDense(self.model_1_output_shape, name="layer3", kernel_quantizer=quantized_bits(16,5,alpha=1), bias_quantizer=quantized_bits(16,5,alpha=1),
                              kernel_regularizer=regularizers.L1L2(l1=1e-3, l2=1e-2)))
             return model
@@ -55,7 +51,7 @@ class Model(tf.keras.Model):
             [
                 layers.Dense(input_shape, activation="relu", name="layer1", kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4)),
                 layers.Dropout(0.3),
-                layers.Dense(self.nodes_fc1, name="layer2", kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4)),
+                # layers.Dense(self.nodes_fc1, name="layer2", kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4)),
                 layers.Dense(self.model_1_output_shape, name="layer3", kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4)),
             ]
         )
@@ -72,7 +68,8 @@ class Model(tf.keras.Model):
         model = keras.Sequential(
             [
                 layers.Dense(input_shape, activation="relu", name="layer1"),
-                layers.Dense(2, activation="softmax", name="layer2"),
+                layers.Dense(int(input_shape/2), activation="relu", name="layer2"),
+                layers.Dense(2, activation="softmax", name="softmax"),
             ]
         )
         return model
@@ -148,9 +145,9 @@ def one_hot_encode(data):
 
 def load_data(args):
     print(args.data_dir)
-    X_train_val = np.load(os.path.join(args.data_dir, 'X_train_val.npy'))
+    X_train_val = np.load(os.path.join(args.data_dir, 'X_train.npy'))
     X_test = np.load(os.path.join(args.data_dir, 'X_test.npy'))    
-    y_train_val = np.load(os.path.join(args.data_dir, 'y_train_val.npy'))
+    y_train_val = np.load(os.path.join(args.data_dir, 'y_train.npy'))
     y_test = np.load(os.path.join(args.data_dir, 'y_test.npy'), allow_pickle=True)
 
     y_train_val = one_hot_encode(y_train_val)
@@ -179,13 +176,21 @@ def main(args):
     X_train_val, X_test, y_train_val, y_test = load_data(args)
 
     model = Model(args)
-    train(model, X_train_val, y_train_val, args)
 
-    # logging test accuracy and parameters
-    if args.log:
-        f = open("grid-search.txt", "a")
-        f.write(f"{model_acc} - {args}\n")
-        f.close()
+    if args.train:
+        model.build(input_shape=(1,1540))
+    #     model.build(input_shape=(1,770))
+    #     print('-----------------------------------------------------')
+    #     print(f'Input Length: {args.input_shape}')
+    #     print(f'Number Models: {len(model.models)-1}')
+    #     print('-----------------------------------------------------')
+    #     print('Input Model')
+    #     print(model.models[0].summary())
+    #     print('\n-----------------------------------------------------')
+    #     print('Output Model')
+    #     print(model.models[-1].summary())
+
+        train(model, X_train_val, y_train_val, args)
     
     if args.ckp:
         print(f'Saving Model#1 as {args.ckp_file_m1}...')
@@ -193,24 +198,36 @@ def main(args):
         print(f'Saving Model#2 as {args.ckp_file_m2}...')
         model.models[-1].save(args.ckp_file_m2)
 
-    print('-----------------------------------------------------')
-    print(f'Input Length: {args.input_shape}')
-    print(f'Number Models: {len(model.models)-1}')
-    print('-----------------------------------------------------')
-    print('Input Model')
-    print(model.models[0].summary())
-    print('\n-----------------------------------------------------')
-    print('Output Model')
-    print(model.models[-1].summary())
+    if args.train:
+        print('-----------------------------------------------------')
+        print(f'Input Length: {args.input_shape}')
+        print(f'Number Models: {len(model.models)-1}')
+        print('-----------------------------------------------------')
+        print('Input Model')
+        print(model.models[0].summary())
+        print('\n-----------------------------------------------------')
+        print('Output Model')
+        print(model.models[-1].summary())
 
-    # load checkpoint and validate model accuracy is the same 
-    model.load_checkpoint(args.ckp_file_m1, args.ckp_file_m2)
+    # load checkpoint and validate model accuracy is the same
+    if args.ckp: 
+        model.load_checkpoint(args.ckp_file_m1, args.ckp_file_m2)
     # model.load_checkpoint('model_1_b16_i6_ex2.h5', 'model_2_b16_i6_ex2.h5')
     y_pred = model.predict(X_test)
     model_acc = accuracy_score(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
+
+    cce = tf.keras.losses.CategoricalCrossentropy()
+    model_loss = cce(y_test, y_pred).numpy()
     
     print("Model Test Accuracy [after loading ckp]: {}".format(model_acc))
+    print("Model Test Loss [after loading ckp]: {}".format(model_loss))
     print('-----------------------------------------------------')
+
+    # logging test accuracy, loss and parameters
+    if args.log:
+        f = open("grid-search-modelv3.txt", "a")
+        f.write(f"{model_acc}, {model_loss} - {args}\n")
+        f.close()
 
     time_elapsed = datetime.now() - start_time
     print('Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed))
@@ -220,22 +237,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Training Options.')
     # model arch parameters 
     parser.add_argument('--num-models', type=int, default=5)
-    parser.add_argument('--input-model-hidden', type=int, default=25)
+    parser.add_argument('--input-model-hidden', type=int, default=100)
     parser.add_argument('--input-model-output', type=int, default=3)
     parser.add_argument('-q', '--quantize', action='store_true')
     parser.add_argument('-r', '--reuse', action='store_true')
     # training parameters
-    parser.add_argument('-d', '--data-dir', type=str, default='../../data/all')
-    parser.add_argument('-b', '--batch-size', type=int, default=1024)
+    parser.add_argument('--train', action='store_true')
+    parser.add_argument('-d', '--data-dir', type=str, default='../../data/new-raw-data')
+    parser.add_argument('-b', '--batch-size', type=int, default=12800)
     parser.add_argument('-e', '--epochs',type=int, default=250)
     parser.add_argument('-v', '--val-split', type=float, default=0.1)
     parser.add_argument('-lr', type=float, default=1e-3)
     # logging 
     parser.add_argument('--ckp', action='store_true')
-    parser.add_argument('--ckp-file-m1', type=str, default='model_1_b16_i6_ex2_v3.h5')
-    parser.add_argument('--ckp-file-m2', type=str, default='model_2_b16_i6_ex2_v3.h5')
-    parser.add_argument('--log', action='store_true')
-    parser.add_argument('--log-file', type=str, default='grid-search.txt')
+    parser.add_argument('--ckp-file-m1', type=str, default='modelv3_1_all.h5')
+    parser.add_argument('--ckp-file-m2', type=str, default='modelv3_2_all.h5')
+    parser.add_argument('--log', action='store_true', default=False)
+    parser.add_argument('--log-file', type=str, default='grid-search-modelv3.txt')
     args = parser.parse_args()
 
     main(args)
