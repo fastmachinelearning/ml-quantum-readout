@@ -128,6 +128,12 @@ def main(args):
         print(f"hls4ml fidelity (first 20): {hls_acc:.6f}")
         print("------------------------------------------------------")
 
+        print('Saving inputs and predictions...')
+        np.savetxt(os.path.join(OutputDir, 'inputs.dat'), X_test, fmt='%i')  # (1000, 800)
+        # Save predictions (output precision ap_fixed<16,3>)
+        np.savetxt(os.path.join(OutputDir, 'y_hls.dat'), y_hls, fmt='%.13f')
+        np.savetxt(os.path.join(OutputDir, 'y_keras.dat'), y_keras, fmt='%.13f')
+
     if args.build:
         start_time = datetime.now()
 
