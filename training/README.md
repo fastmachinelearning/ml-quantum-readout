@@ -11,7 +11,7 @@ python save_data.py --data-dir ../data
 Start training with:
 
 ```bash
-python train-v3.py
+python train-v3.py --data-dir ../data
 ```
 
 List of saved checkpoints can be found [here](https://fermicloud-my.sharepoint.com/:f:/g/personal/jcampos_services_fnal_gov/Eneb82SL2s5ItPpzcefppf0B6uPbiELoxlybgFL-i4HU_w?e=og90Lf).
