@@ -10,6 +10,12 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 import torchinfo 
+import argparse 
+import os 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--data-dir', type=str, default='../data/')
+args = parser.parse_args()
 
 # Hyper-Parameters
 torch.manual_seed(4)
@@ -81,7 +87,7 @@ dataset = None
 
 # Data loop
 for i in tqdm(range(0, 101)): # Loop over files
-    file_name = f'../data/new-raw-data/{str(i).zfill(5)}_ge_RAW_ADC.h5' # Generates 00000, '00001', '00002', ..., '00100'
+    file_name = f'{args.data_dir}/{str(i).zfill(5)}_ge_RAW_ADC.h5' # Generates 00000, '00001', '00002', ..., '00100'
 
     if dataset:
         dataset += Qubit_Readout_Dataset(file_name)
@@ -114,7 +120,8 @@ test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, **kw
 X_train, y_train = train_data[:]
 X_test, y_test = test_data[:]
 
-np.save('/data/jcampos/ml-quantum-readout/data/new-raw-data-all/X_train.npy', X_train)
-np.save('/data/jcampos/ml-quantum-readout/data/new-raw-data-all/y_train.npy', y_train)
-np.save('/data/jcampos/ml-quantum-readout/data/new-raw-data-all/X_test.npy', X_test)
-np.save('/data/jcampos/ml-quantum-readout/data/new-raw-data-all/y_test.npy', y_test)
+
+np.save(os.path.join(args.data_dir, 'X_train.npy'), X_train)
+np.save(os.path.join(args.data_dir, 'y_train.npy'), y_train)
+np.save(os.path.join(args.data_dir, 'X_test.npy'), X_test)
+np.save(os.path.join(args.data_dir, 'y_test.npy'), y_test)

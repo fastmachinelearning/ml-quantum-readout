@@ -1,5 +1,19 @@
 # Training
 
+## Getting Started
+
+Digitize data into numpy arrays with the following script:
+
+```bash
+python save_data.py --data-dir ../data
+```
+
+Start training with:
+
+```bash
+python train-v3.py
+```
+
 List of saved checkpoints can be found [here](https://fermicloud-my.sharepoint.com/:f:/g/personal/jcampos_services_fnal_gov/Eneb82SL2s5ItPpzcefppf0B6uPbiELoxlybgFL-i4HU_w?e=og90Lf).
 
 ## Model Summary
@@ -24,21 +38,4 @@ Total params: 501,752
 Trainable params: 501,252
 Non-trainable params: 500
 _________________________________________________________________
-```
-
-## Start training
-
-Run the script to obtain a trained model with a saved checkpoint.
-
-```bash
-python FcNN_SingleQubit_RawData_tinyModel.py
-```
-
-## Quantization-aware Training
-
-Switch to `src_keras` directory and run `train.py`. Specify the number of epochs, learning rate, batch size and other hyperparameters through command line arguments. All options are shown with `python train.py --help`.
-
-```bash
-cd src_keras
-python train.py --quantize
 ```
