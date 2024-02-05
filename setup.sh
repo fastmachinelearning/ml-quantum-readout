@@ -4,7 +4,7 @@ if conda activate ml4qick-env; then
     echo "Conda environment activated."
 else
     echo "Conda environment ml4qick-env does not exist. Setting up environment..."
-    conda env create -f environment.yml
+    conda env create -f environment.yml -y
 fi
 
 XILINX_DIR="/data/Xilinx/Vivado/2020.1/settings64.sh"
