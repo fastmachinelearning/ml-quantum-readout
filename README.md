@@ -6,16 +6,15 @@ This project uses hls4ml to create the firmware implementation of machine learni
 
 Dependencies
 
-* Python==3.7
-* PyTorch==1.12.0
-* keras==2.9.0
+* Python==3.8
+* keras==2.11.0
 * qkeras==0.9.0
-* hls4ml==0.6.0
+* hls4ml==0.8.1
 
 Clone repository
 
 ```bash
-git clone --recursive https://github.com/jicampos/ml-quantum-readout.git
+git clone https://github.com/jicampos/ml-quantum-readout.git
 ```
 
 Create conda environment
