@@ -91,10 +91,10 @@ def process_data(start_window, end_window, data_dir):
     #######################################
     # Digitize into npy arrays 
     #######################################
-    np.save(os.path.join(data_dir, 'X_train.npy'), X_train)
-    np.save(os.path.join(data_dir, 'y_train.npy'), y_train)
-    np.save(os.path.join(data_dir, 'X_test.npy'), X_test)
-    np.save(os.path.join(data_dir, 'y_test.npy'), y_test)
+    np.save(os.path.join(data_dir, f'X_train_{start_window}_{end_window}.npy'), X_train)
+    np.save(os.path.join(data_dir, f'y_train_{start_window}_{end_window}.npy'), y_train)
+    np.save(os.path.join(data_dir, f'X_test_{start_window}_{end_window}.npy'), X_test)
+    np.save(os.path.join(data_dir, f'y_test_{start_window}_{end_window}.npy'), y_test)
 
 
 if __name__ == "__main__":
