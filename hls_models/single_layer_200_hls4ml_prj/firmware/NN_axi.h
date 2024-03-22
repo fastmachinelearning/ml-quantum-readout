@@ -17,5 +17,7 @@ typedef float output_axi_t;
 typedef float output_t;
 
 void NN_axi(input_axi_t &in, output_axi_t out[N_OUT], bool trigger, unsigned *scaler, unsigned *trigger_delay);
+
+// Results on AXI-lite
 //void NN_axi(input_axi_t &in, bool trigger, unsigned *scaler, unsigned *trigger_delay, output_t *g_logit, output_t *e_logit);
 #endif
