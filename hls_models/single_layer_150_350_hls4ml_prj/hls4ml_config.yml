@@ -1,0 +1,34 @@
+Backend: Vivado
+ClockPeriod: 3.225
+HLSConfig:
+  LayerName:
+    batch_normalization:
+      Precision:
+        bias: ap_fixed<20,3>
+        result: ap_fixed<16,6>
+        scale: ap_fixed<20,3>
+      Trace: true
+    fc1:
+      Precision:
+        result: ap_fixed<18,18>
+      Trace: true
+      accum_t: ap_fixed<18,18>
+    fc1_input:
+      Precision: ap_fixed<14,14>
+      Trace: true
+    fc1_linear:
+      Precision:
+        result: ap_fixed<18,18>
+      Trace: true
+  Model:
+    Precision: ap_fixed<16,6>
+    ReuseFactor: 1
+IOType: io_parallel
+InputData: null
+KerasModel: !keras_model 'hls4ml_prjs/NN_150_350_prj/keras_model.h5'
+OutputDir: hls4ml_prjs/NN_150_350_prj
+OutputPredictions: null
+Part: xczu49dr-ffvf1760-2-e
+ProjectName: NN
+Stamp: e0854F72
+Version: 1.0.0
