@@ -1,5 +1,6 @@
-QICK_BASE_DIR = ../../../qick_dev
-
+# Assuming this repo as a submodule of the qick repo
+# qick/submodules/ml-quantum-readout
+QICK_BASE_DIR = ../../../../
 
 help:
 	@echo "INFO: make <TAB> for targets"
