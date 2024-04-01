@@ -8,9 +8,20 @@ There are two versions available:
 ## Single Qubit Data
 
 ### QICK (ZCU216)
-TODO
+
+Readout time is 2000 ns with 2.6 ns sampling rate.
+
+- Train split [0.9]
+  - ```X shape```: (909000, 1440)
+  - ```y shape```: (909000, 2)
+- Test split [0.1]
+  - ```X shape```: (101000, 1440)
+  - ```y shape```: (101000, 2)
+
+<img src="../images/qick-data.png" alt="drawing" width="500"/>
 
 ### Quantum Machine
+
 Contains two subsets: single and 2-qubit mulitplex data.
 
 Description :
