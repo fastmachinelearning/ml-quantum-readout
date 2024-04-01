@@ -4,19 +4,16 @@ channels:
   - anaconda
   - conda-forge
 dependencies:
-  - python=3.7
-  - pytorch-cpu
+  - python=3.8
   - pip 
   - pip:
-    - git+https://github.com/fastmachinelearning/hls4ml.git
+    - git+https://github.com/jicampos/hls4ml.git@qick#egg=hls4ml[profiling]
     - numpy==1.20.3
     - matplotlib
+    - tensorflow 
+    - qkeras==0.9.0
     - tqdm 
     - h5py
     - notebook
-    - torchvision==0.13.1
-    - torchinfo 
-    - pytorchcv
-    - brevitas
     - pydot 
     - graphviz
