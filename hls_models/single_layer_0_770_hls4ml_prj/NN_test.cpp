@@ -7,12 +7,16 @@
 #include <stdlib.h>
 #include <vector>
 
+#if 0
 #include "firmware/NN.h"
+#else
+#include "firmware/NN_axi.h"
+#endif
 #include "firmware/nnet_utils/nnet_helpers.h"
 
 // hls-fpga-machine-learning insert bram
 
-#define CHECKPOINT 5000
+#define CHECKPOINT 1
 
 namespace nnet {
 bool trace_enabled = true;
@@ -58,28 +62,62 @@ int main(int argc, char **argv) {
             }
 
             // hls-fpga-machine-learning insert data
-      input_t fc1_input[N_INPUT_1_1];
-      nnet::copy_data<float, input_t, 0, N_INPUT_1_1>(in, fc1_input);
-      result_t layer4_out[N_LAYER_2];
+#if 0
+            input_t fc1_input[N_INPUT_1_1];
+            nnet::copy_data<float, input_t, 0, N_INPUT_1_1>(in, fc1_input);
+            result_t layer4_out[N_LAYER_2];
 
             // hls-fpga-machine-learning insert top-level-function
             NN(fc1_input,layer4_out);
+#else
+            //input_t fc1_input[N_INPUT_1_1];
+            //nnet::copy_data<float, input_t, 0, N_INPUT_1_1>(in, fc1_input);
+            //result_t layer4_out[N_LAYER_2];
+            input_axi_t fc1_input;
+            //std::vector<ap_uint<32> > input_packed;
+            for (std::vector<float>::iterator it = in.begin(); it != in.end();) {
+            	ap_uint<16> lo = (int) *(it++);
+            	ap_uint<16> hi = (int) *(it++);
+            	ap_uint<32> word;
+            	word.range(15, 0) = lo;
+            	word.range(31, 16) = hi;
+            	fc1_input.write(word);
+            }
 
+            //nnet::copy_data<ap_uint<32>, ap_uint<32>, 0, N_INPUT_1_1>(input_packed, fc1_input);
+            output_axi_t layer4_out[N_LAYER_2];
+
+            bool trigger = true;
+            unsigned scaler = 1;
+            unsigned trigger_delay;
+
+            // hls-fpga-machine-learning insert top-level-function
+            //NN(fc1_input,layer4_out);
+            NN_axi(fc1_input, layer4_out, trigger, &scaler, &trigger_delay);
+#endif
             if (e % CHECKPOINT == 0) {
-                std::cout << "Predictions" << std::endl;
+                std::cout << "Predictions:           ";
                 // hls-fpga-machine-learning insert predictions
                 for(int i = 0; i < N_LAYER_2; i++) {
                   std::cout << pr[i] << " ";
                 }
                 std::cout << std::endl;
-                std::cout << "Quantized predictions" << std::endl;
+                std::cout << "Quantized predictions: ";
                 // hls-fpga-machine-learning insert quantized
+#if 0
                 nnet::print_result<result_t, N_LAYER_2>(layer4_out, std::cout, true);
+#else
+                nnet::print_result<output_axi_t, N_LAYER_2>(layer4_out, std::cout, true);
+#endif
             }
             e++;
 
             // hls-fpga-machine-learning insert tb-output
+#if 0
             nnet::print_result<result_t, N_LAYER_2>(layer4_out, fout);
+#else
+            nnet::print_result<output_axi_t, N_LAYER_2>(layer4_out, fout);
+#endif
         }
         fin.close();
         fpr.close();
@@ -87,18 +125,35 @@ int main(int argc, char **argv) {
         std::cout << "INFO: Unable to open input/predictions file, using default input." << std::endl;
 
         // hls-fpga-machine-learning insert zero
-    input_t fc1_input[N_INPUT_1_1];
-    nnet::fill_zero<input_t, N_INPUT_1_1>(fc1_input);
-    result_t layer4_out[N_LAYER_2];
-
+#if 0
+        input_t fc1_input[N_INPUT_1_1];
+        nnet::fill_zero<input_t, N_INPUT_1_1>(fc1_input);
+        result_t layer4_out[N_LAYER_2];
         // hls-fpga-machine-learning insert top-level-function
         NN(fc1_input,layer4_out);
+#else
+        input_axi_t fc1_input;
+        output_axi_t layer4_out[N_LAYER_2];
 
+        bool trigger = true;
+        unsigned scaler = 1;
+        unsigned trigger_delay;
+
+        NN_axi(fc1_input, layer4_out, trigger, &scaler, &trigger_delay);
+#endif
         // hls-fpga-machine-learning insert output
+#if 0
         nnet::print_result<result_t, N_LAYER_2>(layer4_out, std::cout, true);
+#else
+        ;
+#endif
 
         // hls-fpga-machine-learning insert tb-output
+#if 0
         nnet::print_result<result_t, N_LAYER_2>(layer4_out, fout);
+#else
+        ;
+#endif
     }
 
     fout.close();

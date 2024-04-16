@@ -40,7 +40,11 @@ void NN_axi(input_axi_t &in, output_axi_t out[N_OUT], bool trigger, unsigned *sc
             	ap_uint<32> data_in;
             	in.read(data_in);
             	DATA_C: if (i >= N_IQ_OFFSET_IN && i <= N_IQ_OFFSET_IN+N_IQ_WINDOW_IN) {
+            		//std::cout << j << std::endl;
+            		//assert(j < N_IQ_WINDOW_IN*2);
             		in_local[j++] = data_in.range(15,0) * *scaler;
+            		//std::cout << j << std::endl;
+            		//assert(j < N_IQ_WINDOW_IN*2);
             		in_local[j++] = data_in.range(31,16) * *scaler;
             	}
             }
