@@ -2,19 +2,18 @@
 
 #include <ap_utils.h>
 
-void NN_axi(input_axi_t &in, output_axi_t out[BUFFER_SIZE], bool trigger, unsigned *window_offset, unsigned *scaling_factor, unsigned *trigger_delay, unsigned *out_reset, unsigned *out_offset) {
+void NN_axi(input_axi_t &in, output_axi_t out[BUFFER_SIZE], bool trigger, unsigned *window_size, unsigned *window_offset, unsigned *scaling_factor, unsigned *out_reset, unsigned *out_offset) {
     #pragma HLS LATENCY min=1
-
-    // Registered axis
-    //#pragma HLS INTERFACE axis register both port=in
 
     // Unregistered axis
 	#pragma HLS INTERFACE axis off port=in
+	// Registered axis
+	//#pragma HLS INTERFACE axis register both port=in
     #pragma HLS INTERFACE bram depth=4294967295 latency=1 port=out
     #pragma HLS INTERFACE ap_none port=trigger
+	#pragma HLS INTERFACE s_axilite register port=window_size bundle=config
 	#pragma HLS INTERFACE s_axilite register port=window_offset bundle=config
     #pragma HLS INTERFACE s_axilite register port=scaling_factor bundle=config
-	#pragma HLS INTERFACE s_axilite register port=trigger_delay bundle=config
 	#pragma HLS INTERFACE s_axilite register port=out_reset bundle=config
     #pragma HLS INTERFACE s_axilite register port=out_offset bundle=config
     #pragma HLS INTERFACE ap_ctrl_none port=return
@@ -25,7 +24,7 @@ void NN_axi(input_axi_t &in, output_axi_t out[BUFFER_SIZE], bool trigger, unsign
     result_t out_local[N_OUT];
 
     // Index of the output buffer over AXI-lite / MMIO
-    static unsigned k = 0;
+    unsigned k = 0;
 
     // Always active
     FOREVER_L: do {
@@ -52,18 +51,15 @@ void NN_axi(input_axi_t &in, output_axi_t out[BUFFER_SIZE], bool trigger, unsign
         TRIGGER_C: if (trigger) {
 
         	// If you need you can wait extra clock cycles
-            TRIGGER_DELAY_L: ap_wait_n(*trigger_delay);
+            WINDOW_OFFSET_L: ap_wait_n(*window_offset);
 
             // Read readout data
-            LOAD_L: for(unsigned i = 0, j = 0; i < N_IQ_IN; i++) {
+            LOAD_L: for(unsigned i = 0, j = 0; i < N_IQ_WINDOW_IN; i++) {
                 #pragma HLS PIPELINE
             	ap_uint<32> data_in;
             	in.read(data_in);
-            	// Store only a sub-window in input buffers for the hls4ml NN module
-            	DATA_C: if (i >= *window_offset && i <= (*window_offset)+N_IQ_WINDOW_IN) {
-            		in_local[j++] = data_in.range(15,0) * *scaling_factor;
-            		in_local[j++] = data_in.range(31,16) * *scaling_factor;
-            	}
+            	in_local[j++] = data_in.range(15,0) * *scaling_factor;
+            	in_local[j++] = data_in.range(31,16) * *scaling_factor;
             }
 
             // hls4ml NN module
