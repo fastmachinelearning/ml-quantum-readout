@@ -69,7 +69,7 @@ def process_data(start_window, end_window, data_dir):
     dataset = None
 
     # Data loop
-    for i in tqdm(range(0, 101)): # Loop over files
+    for i in tqdm(range(0, 100)): # Loop over files
         file_name = f'{data_dir}/{str(i).zfill(5)}_ge_RAW_ADC.h5' # Generates 00000, '00001', '00002', ..., '00100'
         if dataset:
             dataset += Qubit_Readout_Dataset(file_name, csr, sr)
