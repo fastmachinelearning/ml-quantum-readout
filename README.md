@@ -4,13 +4,6 @@ This project uses hls4ml to create the firmware implementation of machine learni
 
 ## Setup
 
-Dependencies
-
-* Python==3.8
-* keras==2.11.0
-* qkeras==0.9.0
-* hls4ml==0.8.1
-
 Clone repository
 
 ```bash
@@ -26,45 +19,41 @@ conda activate ml4qick-env
 
 ## Data
 
-Single and mult-qubit data can be found [here](https://urldefense.proofpoint.com/v2/url?u=https-3A__purdue0-2Dmy.sharepoint.com_-3Af-3A_g_personal_oyesilyu-5Fpurdue-5Fedu_EuhbLM-2DwFApNiX9Mh5ZMeIEBG3dGqSIPgwN21j5S30nxvQ-3Fe-3DCDc3Xi&d=DwMFAg&c=gRgGjJ3BkIsb5y6s49QqsA&r=3tXuppM5Ux2UBnxU0DCrdSagIS9IpvGOlIFtsYfyWuc&m=5R-PzD5Udxkr2BBA9AYXREVhYselyKDYk_-1g6QMka_dPV3VTCVJe4id5PFOgpLq&s=fUu9yFLybrPN_AYcDhfBiQoXf5RlOAwbo6DmsD3CiqU&e=).
+Single qubit data can be found [here](https://purdue0-my.sharepoint.com/personal/du245_purdue_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fdu245%5Fpurdue%5Fedu%2FDocuments%2FShared%2FQSC%20ML%20for%20readout%2FFinal%5Fraw%5Fdata%5Ffor%5Fpaper%2Fdata%5F0528%5Fnpy).
+Previous versions exist, which can be found in [data dir](data/README.md).
 
-## Training
+## Training & Notebooks
 
-A Multi-Layer Perceptron (MLP) is used for qubit readout. A 'baseline' model is established, then is compressed via architecture design and quantization.
-Quantization-aware training (QAT) is performed in [HAWQ](https://github.com/Zhen-Dong/HAWQ) and [Qkeras](https://github.com/google/qkeras).
+Several notebooks for training exist, the simpliest are the 'workflow*.ipynb' notebooks. These notebooks start with training in (Q)Keras down to hls4ml IP generation. The scanning notebooks are useful for design space exploration, comparing traditional methods (match filtering and thresholding) with NNs of varying sizes.
 
 ### Model Summary
 
 ```text
+Model: "sequential"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- fc1 (Dense)                 (None, 250)               500250    
+ fc1 (QDense)                (None, 14)                11214     
                                                                  
- relu1 (Activation)          (None, 250)               0         
+ batchnorm1 (QBatchNormaliza  (None, 14)               56        
+ tion)                                                           
                                                                  
- batch_normalization_14 (Bat  (None, 250)              1000      
- chNormalization)                                                
-                                                                 
- fc2 (Dense)                 (None, 2)                 502       
-                                                                 
- relu2 (Activation)          (None, 2)                 0         
+ fc2 (QDense)                (None, 2)                 30        
                                                                  
 =================================================================
-Total params: 501,752
-Trainable params: 501,252
-Non-trainable params: 500
-_________________________________________________________________
+Total params: 11,300
+Trainable params: 11,272
+Non-trainable params: 28
 ```
 
 ## Inference and Synthesis
 
 The target device for the QICK system is the Zynq UltraScale+ [RFSoC ZCU216](https://www.xilinx.com/products/boards-and-kits/zcu216.html) Evaluation Kit. We use Vivado 2020.1 for all synthesis results.
-
+<!-- 
 ```bash
 cd inference 
 python convert.py -c <framework>/<config>.yml
-```
+``` -->
 
 ## Useful Links
 
