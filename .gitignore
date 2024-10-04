@@ -142,7 +142,7 @@ checkpoints/
 results/
 
 # other extensions 
-*.h5
+#*.h5
 *.npy
 *.txt
 *.png

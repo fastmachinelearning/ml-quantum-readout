@@ -1,0 +1,53 @@
+AcceleratorConfig:
+  Board: zcu216
+  Driver: c
+  Interface: axi_master
+  Precision:
+    Input: float
+    Output: float
+Backend: VivadoAccelerator
+ClockPeriod: 3.225
+HLSConfig:
+  LayerName:
+    batchnorm1:
+      Precision:
+        bias: ap_fixed<24,4>
+        result: ap_fixed<24,4>
+        scale: ap_fixed<24,4>
+      Trace: true
+      accum_t: ap_fixed<24,4>
+    fc1:
+      Precision:
+        result: ap_fixed<17,17>
+      ReuseFactor: 64
+      Strategy: Resource
+      Trace: true
+      accum_t: ap_fixed<17,17>
+    fc1_input:
+      Precision: ap_fixed<14,14>
+      Trace: true
+    fc1_relu:
+      Precision:
+        result: ap_fixed<17,17>
+      Trace: true
+    fc2:
+      Precision:
+        result: ap_fixed<8,5>
+      Trace: true
+      accum_t: ap_fixed<8,5>
+    fc2_linear:
+      Precision:
+        result: ap_fixed<8,5>
+      Trace: true
+  Model:
+    Precision: ap_fixed<16,6>
+    ReuseFactor: 1
+IOType: io_parallel
+InputData: null
+KerasModel: !keras_model '../hls4ml_projects/sl-100_ws-400/keras_model.h5'
+OutputDir: ../hls4ml_projects/sl-100_ws-400
+OutputPredictions: null
+Part: xczu49dr-ffvf1760-2-e
+ProjectName: NN
+Stamp: 67d62cbA
+Version: 1.0.0
