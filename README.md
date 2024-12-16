@@ -1,50 +1,14 @@
 # ml-quantum-readout
 
-This project uses hls4ml to create the firmware implementation of machine learning algorithms for single and mult-qubit readout.
-
-## Setup
-
-Clone repository
-
-```bash
-git clone https://github.com/jicampos/ml-quantum-readout.git
-```
-
-Create conda environment
-
-```bash
-conda env create -f environment.yml
-conda activate ml4qick-env
-```
+This project uses hls4ml to create the firmware implementation of machine learning algorithms for single qubit readout on the QICK system.
 
 ## Data
 
-Single qubit data can be found [here](https://purdue0-my.sharepoint.com/personal/du245_purdue_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fdu245%5Fpurdue%5Fedu%2FDocuments%2FShared%2FQSC%20ML%20for%20readout%2FFinal%5Fraw%5Fdata%5Ffor%5Fpaper%2Fdata%5F0528%5Fnpy).
-Previous versions exist, which can be found in [data dir](data/README.md).
+Data is directly from the ADC units of the ZCU216, prepared into npy files and can be found on Zenodo [here](https://zenodo.org/records/14427490).
 
 ## Training & Notebooks
 
-Several notebooks for training exist, the simpliest are the 'workflow*.ipynb' notebooks. These notebooks start with training in (Q)Keras down to hls4ml IP generation. The scanning notebooks are useful for design space exploration, comparing traditional methods (match filtering and thresholding) with NNs of varying sizes.
-
-### Model Summary
-
-```text
-Model: "sequential"
-_________________________________________________________________
- Layer (type)                Output Shape              Param #   
-=================================================================
- fc1 (QDense)                (None, 14)                11214     
-                                                                 
- batchnorm1 (QBatchNormaliza  (None, 14)               56        
- tion)                                                           
-                                                                 
- fc2 (QDense)                (None, 2)                 30        
-                                                                 
-=================================================================
-Total params: 11,300
-Trainable params: 11,272
-Non-trainable params: 28
-```
+There are several examples for training, the simpliest are the workflow notebooks. These notebooks start with training in (Q)Keras down to hls4ml IP generation. The scanning notebooks are useful for design space exploration, comparing traditional methods (match filtering and thresholding) with NNs of varying sizes.
 
 ## Inference and Synthesis
 
